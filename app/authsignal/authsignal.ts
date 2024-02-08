@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/auth';
 import jwt from 'jsonwebtoken';
 
 // export const retrieveUser = async (): Promise<any> => {
@@ -30,6 +31,7 @@ import jwt from 'jsonwebtoken';
 export const trackAction = async (
   userId: string,
   action: string,
+  redirectToSettings: boolean = false,
 ): Promise<string | null> => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_AUTHSIGNAL_URL}/users/${userId}/actions/${action}`,
@@ -41,6 +43,7 @@ export const trackAction = async (
       },
       body: JSON.stringify({
         redirectUrl: 'http://localhost:3000/authsignal/callback', // TODO: replace with actual redirect url - depending on action
+        redirectToSettings,
       }),
     },
   );
@@ -115,4 +118,11 @@ export const hasChallengeSucceeded = async (
   }
 
   return false;
+};
+
+export const addAuthenticator = async (): Promise<string | null> => {
+  const user = (await auth())?.user;
+  const result = await trackAction(user?.email!, 'addAuthenticators', true);
+
+  return result;
 };
