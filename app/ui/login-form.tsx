@@ -10,23 +10,24 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useFormState, useFormStatus } from 'react-dom';
 import { authenticate } from '@/app/lib/actions';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Authsignal } from '@authsignal/browser';
 import { hasChallengeSucceeded } from '../authsignal/authsignal';
+import Link from 'next/link';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function LoginForm() {
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);
-  const [challengeError, setChallengeError] = useState('');
+  const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
 
   const searchParams = useSearchParams();
-  let challenging = false;
+  const challenging = useRef(false);
 
   useEffect(() => {
     const challenge = async () => {
-      console.log('here');
       const challengeUrl = searchParams.get('challenge');
 
       if (challengeUrl) {
@@ -40,28 +41,41 @@ export default function LoginForm() {
         });
 
         const result = await authsignal.launch(challengeUrl, { mode: 'popup' });
-        console.log('🚀 ~ challenge ~ result:', result);
 
         if (result.token) {
-          const success = await hasChallengeSucceeded(
-            searchParams.get('user')!,
-            result.token,
-            'login',
-          );
-          console.log('🚀 ~ challenge ~ success:', success);
+          const success = await hasChallengeSucceeded(result.token, 'login');
 
           if (success) {
             router.push('/dashboard');
-          } else {
-            setChallengeError('Challenge failed');
+            return;
           }
         }
+
+        toast({ title: 'Challenge failed', variant: 'destructive' });
       }
     };
 
-    if (!challenging) {
-      challenging = true;
+    if (!challenging.current) {
+      challenging.current = true;
       challenge();
+    }
+  }, []);
+
+  useEffect(() => {
+    const message = searchParams.get('message') as string;
+    if (message) {
+      toast({
+        title: message,
+        variant: 'success',
+      });
+    }
+
+    const error = searchParams.get('error') as string;
+    if (error) {
+      toast({
+        title: error,
+        variant: 'destructive',
+      });
     }
   }, []);
 
@@ -114,7 +128,13 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
-        <LoginButton />
+        <div className="flex flex-col items-center space-y-4">
+          <LoginButton />
+
+          <Link href="/register" className="hover:text-blue-500">
+            Register new user
+          </Link>
+        </div>
         <div className="flex h-8 items-end space-x-1">
           {/* Add form errors here */}
         </div>
@@ -123,12 +143,10 @@ export default function LoginForm() {
           aria-live="polite"
           aria-atomic="true"
         >
-          {(errorMessage || challengeError) && (
+          {errorMessage && (
             <>
               <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">
-                {errorMessage || challengeError}
-              </p>
+              <p className="text-sm text-red-500">{errorMessage}</p>
             </>
           )}
         </div>

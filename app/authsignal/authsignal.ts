@@ -42,7 +42,6 @@ export const trackAction = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        redirectUrl: 'http://localhost:3000/authsignal/callback', // TODO: replace with actual redirect url - depending on action
         redirectToSettings,
       }),
     },
@@ -86,11 +85,7 @@ export const trackAction = async (
 //   return null;
 // };
 
-export const hasChallengeSucceeded = async (
-  userId: string,
-  token: string,
-  action: string,
-) => {
+export const hasChallengeSucceeded = async (token: string, action: string) => {
   const decodedToken = jwt.decode(token);
   console.log('🚀 ~ NewComponent ~ decodedToken:', decodedToken);
 
@@ -98,7 +93,8 @@ export const hasChallengeSucceeded = async (
   const idempotencyKey = decodedToken!.other.idempotencyKey;
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_AUTHSIGNAL_URL}/users/${userId}/actions/${action}/${idempotencyKey}`,
+    // @ts-ignore
+    `${process.env.NEXT_PUBLIC_AUTHSIGNAL_URL}/users/${decodedToken.other.userId}/actions/${action}/${idempotencyKey}`,
     {
       method: 'GET',
       headers: {
@@ -120,9 +116,18 @@ export const hasChallengeSucceeded = async (
   return false;
 };
 
-export const addAuthenticator = async (): Promise<string | null> => {
-  const user = (await auth())?.user;
-  const result = await trackAction(user?.email!, 'addAuthenticators', true);
+export const addAuthenticator = async (
+  userId: string = '',
+  redirectToSettings: boolean = true,
+): Promise<string | null> => {
+  const user = (await auth())?.user?.email || userId;
+  console.log('🚀 ~ addAuthenticator ~ user:', user);
+
+  const result = await trackAction(
+    user,
+    'addAuthenticators',
+    redirectToSettings,
+  );
 
   return result;
 };
