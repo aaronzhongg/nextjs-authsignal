@@ -15,11 +15,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Authsignal } from '@authsignal/browser';
 import { hasChallengeSucceeded } from '../authsignal/authsignal';
 
-const authsignal = new Authsignal({
-  tenantId: process.env.NEXT_PUBLIC_AUTHSIGNAL_TENANT_ID!,
-  baseUrl: process.env.NEXT_PUBLIC_AUTHSIGNAL_URL,
-});
-
 export default function LoginForm() {
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);
   const [challengeError, setChallengeError] = useState('');
@@ -38,6 +33,11 @@ export default function LoginForm() {
         const params = new URLSearchParams(searchParams);
         params.delete('challenge');
         router.replace(`${pathname}?${params}`); // Replace params so we don't challenge again using the same url
+
+        const authsignal = new Authsignal({
+          tenantId: process.env.NEXT_PUBLIC_AUTHSIGNAL_TENANT_ID!,
+          baseUrl: process.env.NEXT_PUBLIC_AUTHSIGNAL_URL,
+        });
 
         const result = await authsignal.launch(challengeUrl, { mode: 'popup' });
         console.log('🚀 ~ challenge ~ result:', result);

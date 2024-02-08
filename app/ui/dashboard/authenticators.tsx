@@ -1,13 +1,18 @@
 'use client';
 
 import { addAuthenticator } from '@/app/authsignal/authsignal';
-import { authsignal } from '@/app/authsignal/client';
+import { Authsignal } from '@authsignal/browser';
 import { LockClosedIcon, PowerIcon } from '@heroicons/react/24/outline';
 
 export const Authenticators = (): JSX.Element => {
   return (
     <form
       action={async () => {
+        const authsignal = new Authsignal({
+          tenantId: process.env.NEXT_PUBLIC_AUTHSIGNAL_TENANT_ID!,
+          baseUrl: process.env.NEXT_PUBLIC_AUTHSIGNAL_URL,
+        });
+
         const actionResult = await addAuthenticator();
 
         if (actionResult) {
