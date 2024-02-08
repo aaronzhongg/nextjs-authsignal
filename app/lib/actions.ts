@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError, User } from 'next-auth';
 import { signIn } from '@/auth';
+import { trackAction } from '../authsignal/authsignal';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -120,7 +121,24 @@ export async function authenticate(
   formData: FormData,
 ) {
   try {
-    await signIn('credentials', formData);
+    const res = await signIn('credentials', {
+      redirect: false,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    });
+
+    const url = await trackAction(formData.get('email') as string, 'login');
+
+    if (!url) {
+      redirect('/dashboard');
+    }
+
+    const baseUrl = res.split('?')[0];
+    const params = new URLSearchParams(res.split('?')[1]);
+    params.append('challenge', url);
+    params.append('user', formData.get('email') as string);
+
+    return redirect(`${baseUrl}?${params.toString()}`);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
