@@ -61,24 +61,6 @@ export default function LoginForm() {
     }
   }, []);
 
-  useEffect(() => {
-    const message = searchParams.get('message') as string;
-    if (message) {
-      toast({
-        title: message,
-        variant: 'success',
-      });
-    }
-
-    const error = searchParams.get('error') as string;
-    if (error) {
-      toast({
-        title: error,
-        variant: 'destructive',
-      });
-    }
-  }, []);
-
   return (
     <form action={dispatch} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">

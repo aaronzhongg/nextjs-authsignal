@@ -17,6 +17,7 @@ import { Button } from '../ui/button';
 import AcmeLogo from '../ui/acme-logo';
 import Link from 'next/link';
 import { RegisterResult } from '../lib/definitions';
+import { toast } from '@/components/ui/use-toast';
 
 export default function RegisterForm() {
   const [registerResult, dispatch] = useFormState<
@@ -44,13 +45,21 @@ export default function RegisterForm() {
           const success = await hasChallengeSucceeded(result.token, 'register');
 
           if (success) {
-            router.replace('/login?message=Successfully registered');
+            router.replace('/login');
+            toast({
+              title: 'Successfully registered',
+              variant: 'success',
+            });
+            return;
           }
         }
 
-        router.replace(
-          '/login?message=Successfully registered. However, you must add an authenticator to log in',
-        );
+        router.replace('/login');
+        toast({
+          title:
+            'Successfully registered. However, you must add an authenticator to log in',
+          variant: 'success',
+        });
       }
     };
 
