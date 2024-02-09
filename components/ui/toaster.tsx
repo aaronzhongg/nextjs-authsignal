@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
   Toast,
@@ -7,11 +7,32 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@/components/ui/toast"
-import { useToast } from "@/components/ui/use-toast"
+} from '@/components/ui/toast';
+import { toast, useToast } from '@/components/ui/use-toast';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+import { useEffect } from 'react';
 
 export function Toaster() {
-  const { toasts } = useToast()
+  const { toasts } = useToast();
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const route = useRouter();
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    const params = new URLSearchParams(searchParams);
+    params.delete('error');
+    route.replace(`${pathname}?${params.toString()}`);
+
+    if (error) {
+      toast({
+        title: error,
+        variant: 'destructive',
+      });
+    }
+  }, [searchParams]);
 
   return (
     <ToastProvider>
@@ -27,9 +48,9 @@ export function Toaster() {
             {action}
             <ToastClose />
           </Toast>
-        )
+        );
       })}
       <ToastViewport />
     </ToastProvider>
-  )
+  );
 }
