@@ -8,7 +8,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError, User } from 'next-auth';
 import { signIn } from '@/auth';
-import { RegisterResult } from './definitions';
 import { authsignal } from '../authsignal/client';
 
 const FormSchema = z.object({
@@ -156,47 +155,5 @@ export async function authenticate(
       }
     }
     throw error;
-  }
-}
-
-export async function register(
-  prevState: RegisterResult | undefined,
-  formData: FormData,
-): Promise<RegisterResult | undefined> {
-  try {
-    const credentials = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    };
-
-    const parsedCredentials = z
-      .object({ email: z.string().email(), password: z.string().min(6) })
-      .safeParse(credentials);
-
-    if (parsedCredentials.success) {
-      const { email, password } = parsedCredentials.data;
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await registerUser(email, hashedPassword);
-
-      return RegisterResult.Registered;
-    }
-
-    throw Error('Something went wrong');
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return RegisterResult.Error;
-    }
-    throw error;
-  }
-}
-
-async function registerUser(
-  email: string,
-  hashedPassword: string,
-): Promise<void> {
-  try {
-    await sql<User>`INSERT INTO users (Name, Email, Password) VALUES ('TestName', ${email}, ${hashedPassword})`;
-  } catch (error) {
-    redirect('/login?error=User already exists');
   }
 }

@@ -86,8 +86,3 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
-
-export enum RegisterResult {
-  Registered,
-  Error,
-}

@@ -113,13 +113,6 @@ export default function LoginForm() {
         </div>
         <div className="flex flex-col items-center space-y-4">
           <LoginButton />
-
-          <Link href="/register" className="hover:text-blue-500">
-            Register new user
-          </Link>
-        </div>
-        <div className="flex h-8 items-end space-x-1">
-          {/* Add form errors here */}
         </div>
         <div
           className="flex h-8 items-end space-x-1"
