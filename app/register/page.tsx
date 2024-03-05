@@ -42,7 +42,7 @@ export default function RegisterForm() {
         });
 
         if (result.token) {
-          const success = await hasChallengeSucceeded(result.token, 'register');
+          const success = await hasChallengeSucceeded(result.token);
 
           if (success) {
             router.replace('/login');

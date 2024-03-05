@@ -33,6 +33,7 @@ export default function LoginForm() {
       if (challengeUrl) {
         const params = new URLSearchParams(searchParams);
         params.delete('challenge');
+        // TODO: This doesn't seem to be working
         router.replace(`${pathname}?${params}`); // Replace params so we don't challenge again using the same url
 
         const authsignal = new Authsignal({
@@ -43,7 +44,7 @@ export default function LoginForm() {
         const result = await authsignal.launch(challengeUrl, { mode: 'popup' });
 
         if (result.token) {
-          const success = await hasChallengeSucceeded(result.token, 'login');
+          const success = await hasChallengeSucceeded(result.token);
 
           if (success) {
             router.push('/dashboard');

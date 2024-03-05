@@ -2,7 +2,7 @@
 
 import { addAuthenticator } from '@/app/authsignal/authsignal';
 import { Authsignal } from '@authsignal/browser';
-import { LockClosedIcon, PowerIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon } from '@heroicons/react/24/outline';
 
 export const Authenticators = (): JSX.Element => {
   return (

@@ -8,8 +8,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError, User } from 'next-auth';
 import { signIn } from '@/auth';
-import { trackAction } from '../authsignal/authsignal';
 import { RegisterResult } from './definitions';
+import { authsignal } from '../authsignal/client';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -130,15 +130,19 @@ export async function authenticate(
       password: formData.get('password') as string,
     });
 
-    const url = await trackAction(formData.get('email') as string, 'login');
+    const result = await authsignal.track({
+      userId: formData.get('email') as string,
+      action: 'login',
+    });
 
-    if (!url) {
+    // Challenge is not required
+    if (!result.url) {
       redirect('/dashboard');
     }
 
     const baseUrl = res.split('?')[0];
     const params = new URLSearchParams(res.split('?')[1]);
-    params.append('challenge', url);
+    params.append('challenge', result.url);
     params.append('user', formData.get('email') as string);
 
     return redirect(`${baseUrl}?${params.toString()}`);
