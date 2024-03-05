@@ -3,6 +3,7 @@
 import { addAuthenticator } from '@/app/authsignal/authsignal';
 import { Authsignal } from '@authsignal/browser';
 import { LockClosedIcon } from '@heroicons/react/24/outline';
+import Cookies from 'js-cookie';
 
 export const Authenticators = (): JSX.Element => {
   return (
@@ -13,7 +14,9 @@ export const Authenticators = (): JSX.Element => {
           baseUrl: process.env.NEXT_PUBLIC_AUTHSIGNAL_URL,
         });
 
-        const actionResult = await addAuthenticator();
+        const actionResult = await addAuthenticator(
+          JSON.parse(Cookies.get('session')!).userId,
+        );
 
         if (actionResult) {
           // Authsignal handles the authenticators, don't need to do anything here

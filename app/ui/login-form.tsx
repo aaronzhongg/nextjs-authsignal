@@ -3,19 +3,18 @@
 import { lusitana } from '@/app/ui/fonts';
 import {
   AtSymbolIcon,
-  KeyIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { authenticate } from '@/app/lib/actions';
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Authsignal } from '@authsignal/browser';
 import { hasChallengeSucceeded } from '../authsignal/authsignal';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
+import { authenticate } from '../lib/actions';
 
 export default function LoginForm() {
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);

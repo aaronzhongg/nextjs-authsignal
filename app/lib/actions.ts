@@ -1,13 +1,9 @@
 'use server';
 
-import bcrypt from 'bcrypt';
-
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { AuthError, User } from 'next-auth';
-import { signIn } from '@/auth';
 import { authsignal } from '../authsignal/client';
 
 const FormSchema = z.object({
@@ -122,38 +118,22 @@ export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  try {
-    const res = await signIn('credentials', {
-      redirect: false,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    });
+  console.log('🚀 ~ formData:', formData);
 
-    const result = await authsignal.track({
-      userId: formData.get('email') as string,
-      action: 'login',
-    });
+  const result = await authsignal.track({
+    userId: formData.get('email') as string,
+    action: 'login',
+  });
 
-    // Challenge is not required
-    if (!result.url) {
-      redirect('/dashboard');
-    }
-
-    const baseUrl = res.split('?')[0];
-    const params = new URLSearchParams(res.split('?')[1]);
-    params.append('challenge', result.url);
-    params.append('user', formData.get('email') as string);
-
-    return redirect(`${baseUrl}?${params.toString()}`);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
-      }
-    }
-    throw error;
+  // Challenge is not required
+  if (!result.url) {
+    redirect('/dashboard');
   }
+
+  // const baseUrl = res.split('?')[0];
+  const params = new URLSearchParams();
+  params.append('challenge', result.url);
+  params.append('user', formData.get('email') as string);
+
+  return redirect(`?${params.toString()}`);
 }

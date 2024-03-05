@@ -1,6 +1,5 @@
 'use server';
 
-import { auth } from '@/auth';
 import { authsignal } from './client';
 
 // This is a little awkward with a proxy method that calls the authsignal track function but it's due to the Next.js's app router design for calling Server Actions from Client Components
@@ -33,14 +32,13 @@ export const hasChallengeSucceeded = async (token: string) => {
 };
 
 export const addAuthenticator = async (
-  userId: string = '',
+  userId: string,
   redirectToSettings: boolean = true,
 ): Promise<string | null> => {
-  const user = (await auth())?.user?.email || userId;
-  console.log('🚀 ~ addAuthenticator ~ user:', user);
+  console.log('🚀 ~ addAuthenticator ~ user:', userId);
 
   const result = await authsignal.track({
-    userId: user,
+    userId: userId,
     action: 'addAuthenticators',
     redirectToSettings: redirectToSettings,
   });
