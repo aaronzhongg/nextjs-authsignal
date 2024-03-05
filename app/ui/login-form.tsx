@@ -12,9 +12,10 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Authsignal } from '@authsignal/browser';
 import { hasChallengeSucceeded } from '../authsignal/authsignal';
-import Link from 'next/link';
+import Cookie from 'js-cookie';
 import { useToast } from '@/components/ui/use-toast';
 import { authenticate } from '../lib/actions';
+import jwt from 'jsonwebtoken';
 
 export default function LoginForm() {
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);
@@ -30,9 +31,9 @@ export default function LoginForm() {
       const challengeUrl = searchParams.get('challenge');
 
       if (challengeUrl) {
+        // TODO: Remove challenge param doesn't seem to be working
         const params = new URLSearchParams(searchParams);
         params.delete('challenge');
-        // TODO: This doesn't seem to be working
         router.replace(`${pathname}?${params}`); // Replace params so we don't challenge again using the same url
 
         const authsignal = new Authsignal({
@@ -44,8 +45,14 @@ export default function LoginForm() {
 
         if (result.token) {
           const success = await hasChallengeSucceeded(result.token);
+          const decodedToken = jwt.decode(result.token);
 
           if (success) {
+            Cookie.set(
+              'session',
+              // @ts-ignore
+              JSON.stringify({ userId: decodedToken!.other.userId }),
+            );
             router.push('/dashboard');
             return;
           }
